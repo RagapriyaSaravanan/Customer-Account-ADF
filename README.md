@@ -1,5 +1,12 @@
 # Customer-Account-ADF
 
+Order of files to go through
+1. README
+2. Prerequisites and Setup
+3. Project Implementation
+4. Code
+5. Outputs
+
 ## Introduction
 
 This project focuses on the design and implementation of an end-to-end data pipeline for customer account analysis, built using Microsoft Azure’s suite of data services. The objective is to build a robust, scalable pipeline capable of ingesting raw customer-related data from a backend storage account, transforming it using Azure Data Factory Dataflows, and storing the cleaned and processed output into an Azure SQL Database.
