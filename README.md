@@ -104,3 +104,6 @@ The Customer-Account-ADF project is a comprehensive showcase of modern data engi
 - Security and scalability through Azure-native tools
 
 This project not only delivers a high-impact business solution but also builds critical skills for real-world data engineering roles.
+
+![image](https://github.com/user-attachments/assets/5df09d1c-e72b-4383-a9ba-8b28a912f241)
+
