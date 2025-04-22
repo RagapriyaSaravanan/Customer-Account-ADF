@@ -1,0 +1,184 @@
+{
+    "name": "df_loanpayments_SCD1",
+    "properties": {
+        "type": "MappingDataFlow",
+        "typeProperties": {
+            "sources": [
+                {
+                    "linkedService": {
+                        "referenceName": "AzureDataLakeStorage1",
+                        "type": "LinkedServiceReference"
+                    },
+                    "name": "source"
+                },
+                {
+                    "linkedService": {
+                        "referenceName": "ls_sql_db",
+                        "type": "LinkedServiceReference"
+                    },
+                    "name": "target"
+                }
+            ],
+            "sinks": [
+                {
+                    "linkedService": {
+                        "referenceName": "ls_sql_db",
+                        "type": "LinkedServiceReference"
+                    },
+                    "name": "UpdateSink"
+                },
+                {
+                    "linkedService": {
+                        "referenceName": "ls_sql_db",
+                        "type": "LinkedServiceReference"
+                    },
+                    "name": "InsertSink"
+                }
+            ],
+            "transformations": [
+                {
+                    "name": "AddHashkeycolumn"
+                },
+                {
+                    "name": "Lookup"
+                },
+                {
+                    "name": "RenameColumns"
+                },
+                {
+                    "name": "split"
+                },
+                {
+                    "name": "AuditColumns"
+                },
+                {
+                    "name": "alterRow"
+                },
+                {
+                    "name": "AuditColumn"
+                }
+            ],
+            "scriptLines": [
+                "source(output(",
+                "          PaymentId as short,",
+                "          LoanId as short,",
+                "          PaymentDate as timestamp,",
+                "          PaymentAmount as double",
+                "     ),",
+                "     useSchema: false,",
+                "     allowSchemaDrift: true,",
+                "     validateSchema: false,",
+                "     ignoreNoFilesFound: false,",
+                "     format: 'delimited',",
+                "     fileSystem: 'medallion',",
+                "     columnDelimiter: ',',",
+                "     escapeChar: '\\\\',",
+                "     quoteChar: '\\\"',",
+                "     columnNamesAsHeader: true,",
+                "     wildcardPaths:['silver/loan_payments/*.csv']) ~> source",
+                "source(output(",
+                "          PaymentId as integer,",
+                "          HashKey as long",
+                "     ),",
+                "     allowSchemaDrift: true,",
+                "     validateSchema: false,",
+                "     format: 'query',",
+                "     store: 'sqlserver',",
+                "     query: 'SELECT PaymentId, HashKey FROM [dbo].[loanpayments] ',",
+                "     isolationLevel: 'READ_UNCOMMITTED') ~> target",
+                "RenameColumns derive(src_Hashkey = crc32(toString(src_PaymentId), toString(src_LoanId), src_PaymentDate, toString(src_PaymentAmount))) ~> AddHashkeycolumn",
+                "AddHashkeycolumn, target lookup(src_PaymentId == PaymentId,",
+                "     multiple: false,",
+                "     pickup: 'any',",
+                "     broadcast: 'auto')~> Lookup",
+                "source select(mapColumn(",
+                "          each(match(1==1),",
+                "               concat('src_',$$) = $$)",
+                "     ),",
+                "     skipDuplicateMapInputs: true,",
+                "     skipDuplicateMapOutputs: true) ~> RenameColumns",
+                "Lookup split(isNull(PaymentId),",
+                "     src_PaymentId==PaymentId && src_Hashkey !=HashKey,",
+                "     disjoint: false) ~> split@(Insert, Update)",
+                "split@Update derive(src_updatedby = 'dataflow - updated',",
+                "          src_updateddate = currentTimestamp()) ~> AuditColumns",
+                "AuditColumns alterRow(updateIf(1==1)) ~> alterRow",
+                "split@Insert derive(src_createdby = 'dataflow',",
+                "          src_updatedby = 'dataflow',",
+                "          src_createddate = currentTimestamp(),",
+                "          src_updateddate = currentTimestamp()) ~> AuditColumn",
+                "alterRow sink(allowSchemaDrift: false,",
+                "     validateSchema: false,",
+                "     input(",
+                "          PaymentId as integer,",
+                "          LoanId as integer,",
+                "          PaymentDate as timestamp,",
+                "          PaymentAmount as double,",
+                "          CREATEDBY as string,",
+                "          UPDATEDBY as string,",
+                "          CREADTEDDATE as timestamp,",
+                "          UPDATEDDATE as timestamp,",
+                "          HashKey as long",
+                "     ),",
+                "     format: 'table',",
+                "     store: 'sqlserver',",
+                "     schemaName: 'dbo',",
+                "     tableName: 'loanpayments',",
+                "     insertable: false,",
+                "     updateable: true,",
+                "     deletable: false,",
+                "     upsertable: false,",
+                "     keys:['PaymentId'],",
+                "     stagingSchemaName: '',",
+                "     skipDuplicateMapInputs: true,",
+                "     skipDuplicateMapOutputs: true,",
+                "     errorHandlingOption: 'stopOnFirstError',",
+                "     mapColumn(",
+                "          PaymentId = src_PaymentId,",
+                "          LoanId = src_LoanId,",
+                "          PaymentDate = src_PaymentDate,",
+                "          PaymentAmount = src_PaymentAmount,",
+                "          UPDATEDBY = src_updatedby,",
+                "          UPDATEDDATE = src_updateddate,",
+                "          HashKey = src_Hashkey",
+                "     )) ~> UpdateSink",
+                "AuditColumn sink(allowSchemaDrift: true,",
+                "     validateSchema: false,",
+                "     input(",
+                "          PaymentId as integer,",
+                "          LoanId as integer,",
+                "          PaymentDate as timestamp,",
+                "          PaymentAmount as double,",
+                "          CREATEDBY as string,",
+                "          UPDATEDBY as string,",
+                "          CREADTEDDATE as timestamp,",
+                "          UPDATEDDATE as timestamp,",
+                "          HashKey as long",
+                "     ),",
+                "     format: 'table',",
+                "     store: 'sqlserver',",
+                "     schemaName: 'dbo',",
+                "     tableName: 'loanpayments',",
+                "     insertable: true,",
+                "     updateable: false,",
+                "     deletable: false,",
+                "     upsertable: false,",
+                "     stagingSchemaName: '',",
+                "     skipDuplicateMapInputs: true,",
+                "     skipDuplicateMapOutputs: true,",
+                "     errorHandlingOption: 'stopOnFirstError',",
+                "     mapColumn(",
+                "          PaymentId = src_PaymentId,",
+                "          LoanId = src_LoanId,",
+                "          PaymentDate = src_PaymentDate,",
+                "          PaymentAmount = src_PaymentAmount,",
+                "          CREATEDBY = src_createdby,",
+                "          UPDATEDBY = src_updatedby,",
+                "          CREADTEDDATE = src_createddate,",
+                "          UPDATEDDATE = src_updateddate,",
+                "          HashKey = src_Hashkey",
+                "     )) ~> InsertSink"
+            ]
+        }
+    }
+}

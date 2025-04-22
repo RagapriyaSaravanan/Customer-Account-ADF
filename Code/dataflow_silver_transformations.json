@@ -1,0 +1,439 @@
+{
+    "name": "df_silver",
+    "properties": {
+        "type": "MappingDataFlow",
+        "typeProperties": {
+            "sources": [
+                {
+                    "linkedService": {
+                        "referenceName": "AzureDataLakeStorage1",
+                        "type": "LinkedServiceReference"
+                    },
+                    "name": "Accounts"
+                },
+                {
+                    "linkedService": {
+                        "referenceName": "AzureDataLakeStorage1",
+                        "type": "LinkedServiceReference"
+                    },
+                    "name": "Customers"
+                },
+                {
+                    "linkedService": {
+                        "referenceName": "AzureDataLakeStorage1",
+                        "type": "LinkedServiceReference"
+                    },
+                    "name": "LoanPayments"
+                },
+                {
+                    "linkedService": {
+                        "referenceName": "AzureDataLakeStorage1",
+                        "type": "LinkedServiceReference"
+                    },
+                    "name": "Loans"
+                },
+                {
+                    "linkedService": {
+                        "referenceName": "AzureDataLakeStorage1",
+                        "type": "LinkedServiceReference"
+                    },
+                    "name": "Transactions"
+                }
+            ],
+            "sinks": [
+                {
+                    "linkedService": {
+                        "referenceName": "AzureDataLakeStorage1",
+                        "type": "LinkedServiceReference"
+                    },
+                    "name": "AccountsSink"
+                },
+                {
+                    "linkedService": {
+                        "referenceName": "AzureDataLakeStorage1",
+                        "type": "LinkedServiceReference"
+                    },
+                    "name": "CustomersSink"
+                },
+                {
+                    "linkedService": {
+                        "referenceName": "AzureDataLakeStorage1",
+                        "type": "LinkedServiceReference"
+                    },
+                    "name": "LoanPaymentsSinks"
+                },
+                {
+                    "linkedService": {
+                        "referenceName": "AzureDataLakeStorage1",
+                        "type": "LinkedServiceReference"
+                    },
+                    "name": "LoansSink"
+                },
+                {
+                    "linkedService": {
+                        "referenceName": "AzureDataLakeStorage1",
+                        "type": "LinkedServiceReference"
+                    },
+                    "name": "TransactionsSink"
+                }
+            ],
+            "transformations": [
+                {
+                    "name": "aggregate1"
+                },
+                {
+                    "name": "select1"
+                },
+                {
+                    "name": "select2"
+                },
+                {
+                    "name": "filter1"
+                },
+                {
+                    "name": "select3"
+                },
+                {
+                    "name": "select4"
+                },
+                {
+                    "name": "select5"
+                },
+                {
+                    "name": "filter2"
+                },
+                {
+                    "name": "filter3"
+                },
+                {
+                    "name": "filter4"
+                },
+                {
+                    "name": "filter5"
+                },
+                {
+                    "name": "derivedColumn1"
+                },
+                {
+                    "name": "select6"
+                },
+                {
+                    "name": "aggregate2"
+                },
+                {
+                    "name": "cast1"
+                },
+                {
+                    "name": "cast2"
+                },
+                {
+                    "name": "aggregate5"
+                },
+                {
+                    "name": "window1"
+                },
+                {
+                    "name": "filter6"
+                },
+                {
+                    "name": "select7"
+                },
+                {
+                    "name": "window2"
+                },
+                {
+                    "name": "filter7"
+                },
+                {
+                    "name": "select8"
+                }
+            ],
+            "scriptLines": [
+                "source(output(",
+                "          account_id as short,",
+                "          customer_id as short,",
+                "          account_type as string,",
+                "          balance as double",
+                "     ),",
+                "     useSchema: false,",
+                "     allowSchemaDrift: false,",
+                "     validateSchema: false,",
+                "     ignoreNoFilesFound: true,",
+                "     format: 'delimited',",
+                "     fileSystem: 'medallion',",
+                "     folderPath: 'bronze',",
+                "     fileName: 'accounts.csv',",
+                "     columnDelimiter: ',',",
+                "     escapeChar: '\\\\',",
+                "     quoteChar: '\\\"',",
+                "     columnNamesAsHeader: true) ~> Accounts",
+                "source(output(",
+                "          customer_id as short,",
+                "          first_name as string,",
+                "          last_name as string,",
+                "          address as string,",
+                "          city as string,",
+                "          state as string,",
+                "          zip as string",
+                "     ),",
+                "     useSchema: false,",
+                "     allowSchemaDrift: true,",
+                "     validateSchema: false,",
+                "     ignoreNoFilesFound: true,",
+                "     format: 'delimited',",
+                "     fileSystem: 'medallion',",
+                "     folderPath: 'bronze',",
+                "     fileName: 'customers.csv',",
+                "     columnDelimiter: ',',",
+                "     escapeChar: '\\\\',",
+                "     quoteChar: '\\\"',",
+                "     columnNamesAsHeader: true) ~> Customers",
+                "source(output(",
+                "          payment_id as short,",
+                "          loan_id as short,",
+                "          payment_date as date,",
+                "          payment_amount as double",
+                "     ),",
+                "     useSchema: false,",
+                "     allowSchemaDrift: true,",
+                "     validateSchema: false,",
+                "     ignoreNoFilesFound: true,",
+                "     format: 'delimited',",
+                "     fileSystem: 'medallion',",
+                "     folderPath: 'bronze',",
+                "     fileName: 'loan_payments.csv',",
+                "     columnDelimiter: ',',",
+                "     escapeChar: '\\\\',",
+                "     quoteChar: '\\\"',",
+                "     columnNamesAsHeader: true) ~> LoanPayments",
+                "source(output(",
+                "          loan_id as short,",
+                "          customer_id as short,",
+                "          loan_amount as double,",
+                "          interest_rate as double,",
+                "          loan_term as short",
+                "     ),",
+                "     useSchema: false,",
+                "     allowSchemaDrift: true,",
+                "     validateSchema: false,",
+                "     ignoreNoFilesFound: true,",
+                "     format: 'delimited',",
+                "     fileSystem: 'medallion',",
+                "     folderPath: 'bronze',",
+                "     fileName: 'loans.csv',",
+                "     columnDelimiter: ',',",
+                "     escapeChar: '\\\\',",
+                "     quoteChar: '\\\"',",
+                "     columnNamesAsHeader: true) ~> Loans",
+                "source(output(",
+                "          transaction_id as short,",
+                "          account_id as short,",
+                "          transaction_date as date,",
+                "          transaction_amount as double,",
+                "          transaction_type as string",
+                "     ),",
+                "     useSchema: false,",
+                "     allowSchemaDrift: true,",
+                "     validateSchema: false,",
+                "     ignoreNoFilesFound: true,",
+                "     format: 'delimited',",
+                "     fileSystem: 'medallion',",
+                "     folderPath: 'bronze',",
+                "     fileName: 'transactions.csv',",
+                "     columnDelimiter: ',',",
+                "     escapeChar: '\\\\',",
+                "     quoteChar: '\\\"',",
+                "     columnNamesAsHeader: true) ~> Transactions",
+                "select1 aggregate(groupBy(AccountId,",
+                "          CustomerId),",
+                "     AccountType = first(AccountType),",
+                "          Balance = first(Balance)) ~> aggregate1",
+                "Accounts select(mapColumn(",
+                "          AccountId = account_id,",
+                "          CustomerId = customer_id,",
+                "          AccountType = account_type,",
+                "          Balance = balance",
+                "     ),",
+                "     skipDuplicateMapInputs: true,",
+                "     skipDuplicateMapOutputs: true) ~> select1",
+                "Customers select(mapColumn(",
+                "          CustomerId = customer_id,",
+                "          FirstName = first_name,",
+                "          LastName = last_name,",
+                "          Address = address,",
+                "          City = city,",
+                "          State = state,",
+                "          Zip = zip",
+                "     ),",
+                "     skipDuplicateMapInputs: true,",
+                "     skipDuplicateMapOutputs: true) ~> select2",
+                "aggregate1 filter(!isNull(AccountId) && !isNull(CustomerId) && !isNull(AccountType) && Balance > 0) ~> filter1",
+                "LoanPayments select(mapColumn(",
+                "          PaymentId = payment_id,",
+                "          LoanId = loan_id,",
+                "          PaymentDate = payment_date,",
+                "          PaymentAmount = payment_amount",
+                "     ),",
+                "     skipDuplicateMapInputs: true,",
+                "     skipDuplicateMapOutputs: true) ~> select3",
+                "Loans select(mapColumn(",
+                "          LoanId = loan_id,",
+                "          CustomerId = customer_id,",
+                "          LoanAmount = loan_amount,",
+                "          InterestRate = interest_rate,",
+                "          LoanTerm = loan_term",
+                "     ),",
+                "     skipDuplicateMapInputs: true,",
+                "     skipDuplicateMapOutputs: true) ~> select4",
+                "Transactions select(mapColumn(",
+                "          TransactionId = transaction_id,",
+                "          AccountId = account_id,",
+                "          TransactionDate = transaction_date,",
+                "          TransactionAmount = transaction_amount,",
+                "          TransactionType = transaction_type",
+                "     ),",
+                "     skipDuplicateMapInputs: true,",
+                "     skipDuplicateMapOutputs: true) ~> select5",
+                "select2 filter(!isNull(CustomerId) && !isNull(FirstName) && !isNull(LastName) && !isNull(Address) && !isNull(City) && !isNull(Zip)) ~> filter2",
+                "select3 filter(!isNull(PaymentId) &&\r",
+                "!isNull(LoanId) &&\r",
+                "!isNull(PaymentDate) &&\r",
+                "PaymentAmount > 0) ~> filter3",
+                "select4 filter(!isNull(LoanId) && !isNull(CustomerId) && LoanAmount > 0 && InterestRate > 0 && LoanTerm > 0) ~> filter4",
+                "select5 filter(!isNull(TransactionId) && !isNull(AccountId) && !isNull(TransactionDate) && !isNull(TransactionType) && TransactionAmount > 0) ~> filter5",
+                "filter2 derive(CustomerName = concat(FirstName, ' ', LastName)) ~> derivedColumn1",
+                "derivedColumn1 select(mapColumn(",
+                "          CustomerId,",
+                "          CustomerName,",
+                "          Address,",
+                "          City,",
+                "          State,",
+                "          Zip",
+                "     ),",
+                "     skipDuplicateMapInputs: true,",
+                "     skipDuplicateMapOutputs: true) ~> select6",
+                "select6 aggregate(groupBy(CustomerId),",
+                "     CustomerName = first(CustomerName),",
+                "          Address = first(Address),",
+                "          City = first(City),",
+                "          State = first(State),",
+                "          Zip = first(Zip)) ~> aggregate2",
+                "filter3 cast(output(",
+                "          PaymentDate as timestamp 'yyyy.MM.dd HH:mm:ss'",
+                "     ),",
+                "     errors: true) ~> cast1",
+                "filter5 cast(output(",
+                "          TransactionDate as timestamp 'yyyy.MM.dd hh:mm:ss a'",
+                "     ),",
+                "     errors: true) ~> cast2",
+                "cast2 aggregate(groupBy(TransactionId,",
+                "          AccountId),",
+                "     TransactionDate = first(TransactionDate),",
+                "          TransactionAmount = first(TransactionAmount),",
+                "          TransactionType = first(TransactionType)) ~> aggregate5",
+                "cast1 window(over(PaymentId),",
+                "     asc(PaymentId, true),",
+                "     rownumber = rowNumber()) ~> window1",
+                "window1 filter(equals(rownumber, 1)) ~> filter6",
+                "filter6 select(mapColumn(",
+                "          PaymentId,",
+                "          LoanId,",
+                "          PaymentDate,",
+                "          PaymentAmount",
+                "     ),",
+                "     skipDuplicateMapInputs: true,",
+                "     skipDuplicateMapOutputs: true) ~> select7",
+                "filter4 window(over(LoanId,",
+                "          CustomerId),",
+                "     asc(LoanId, true),",
+                "     rownnumber = rowNumber()) ~> window2",
+                "window2 filter(rownnumber == 1) ~> filter7",
+                "filter7 select(mapColumn(",
+                "          LoanId,",
+                "          CustomerId,",
+                "          LoanAmount,",
+                "          InterestRate,",
+                "          LoanTerm",
+                "     ),",
+                "     skipDuplicateMapInputs: true,",
+                "     skipDuplicateMapOutputs: true) ~> select8",
+                "filter1 sink(allowSchemaDrift: true,",
+                "     validateSchema: false,",
+                "     format: 'delimited',",
+                "     fileSystem: 'medallion',",
+                "     folderPath: 'silver/accounts',",
+                "     columnDelimiter: ',',",
+                "     escapeChar: '\\\\',",
+                "     quoteChar: '\\\"',",
+                "     columnNamesAsHeader: true,",
+                "     umask: 0022,",
+                "     preCommands: [],",
+                "     postCommands: [],",
+                "     skipDuplicateMapInputs: true,",
+                "     skipDuplicateMapOutputs: true,",
+                "     mapColumn(",
+                "          AccountId,",
+                "          CustomerId,",
+                "          AccountType,",
+                "          Balance",
+                "     )) ~> AccountsSink",
+                "aggregate2 sink(allowSchemaDrift: true,",
+                "     validateSchema: false,",
+                "     format: 'delimited',",
+                "     fileSystem: 'medallion',",
+                "     folderPath: 'silver/customers',",
+                "     columnDelimiter: ',',",
+                "     escapeChar: '\\\\',",
+                "     quoteChar: '\\\"',",
+                "     columnNamesAsHeader: true,",
+                "     umask: 0022,",
+                "     preCommands: [],",
+                "     postCommands: [],",
+                "     skipDuplicateMapInputs: true,",
+                "     skipDuplicateMapOutputs: true) ~> CustomersSink",
+                "select7 sink(allowSchemaDrift: true,",
+                "     validateSchema: false,",
+                "     format: 'delimited',",
+                "     fileSystem: 'medallion',",
+                "     folderPath: 'silver/loan_payments',",
+                "     columnDelimiter: ',',",
+                "     escapeChar: '\\\\',",
+                "     quoteChar: '\\\"',",
+                "     columnNamesAsHeader: true,",
+                "     umask: 0022,",
+                "     preCommands: [],",
+                "     postCommands: [],",
+                "     skipDuplicateMapInputs: true,",
+                "     skipDuplicateMapOutputs: true) ~> LoanPaymentsSinks",
+                "select8 sink(allowSchemaDrift: true,",
+                "     validateSchema: false,",
+                "     format: 'delimited',",
+                "     fileSystem: 'medallion',",
+                "     folderPath: 'silver/loans',",
+                "     columnDelimiter: ',',",
+                "     escapeChar: '\\\\',",
+                "     quoteChar: '\\\"',",
+                "     columnNamesAsHeader: true,",
+                "     umask: 0022,",
+                "     preCommands: [],",
+                "     postCommands: [],",
+                "     skipDuplicateMapInputs: true,",
+                "     skipDuplicateMapOutputs: true) ~> LoansSink",
+                "aggregate5 sink(allowSchemaDrift: true,",
+                "     validateSchema: false,",
+                "     format: 'delimited',",
+                "     fileSystem: 'medallion',",
+                "     folderPath: 'silver/transactions',",
+                "     columnDelimiter: ',',",
+                "     escapeChar: '\\\\',",
+                "     quoteChar: '\\\"',",
+                "     columnNamesAsHeader: true,",
+                "     umask: 0022,",
+                "     preCommands: [],",
+                "     postCommands: [],",
+                "     skipDuplicateMapInputs: true,",
+                "     skipDuplicateMapOutputs: true) ~> TransactionsSink"
+            ]
+        }
+    }
+}
